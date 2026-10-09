@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyCamp: Курс Python с нуля</title>
+    <style>
+        :root {
+            --primary: #377dff;
+            --primary-dark: #2a5ac1;
+            --bg: #f8f9fa;
+            --text: #212529;
+            --card: #ffffff;
+            --border: #dee2e6;
+            --success: #28a745;
+            --code-bg: #2d2d2d;
+            --code-text: #f8f8f2;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 300px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 1rem;
+            align-self: flex-start;
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .module-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .module-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .module-list button {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            background: var(--card);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .module-list button:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+
+        .module-list button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+
+        .main-content {
+            flex: 1;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .lesson-title {
+            margin-top: 0;
+            color: var(--primary-dark);
+        }
+
+        .lesson-content p {
+            margin-bottom: 1rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: "Courier New", monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .run-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .task {
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .task h4 {
+            margin-top: 0;
+            color: var(--primary-dark);
+        }
+
+        .task textarea {
+            width: 100%;
+            min-height: 100px;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: "Courier New", monospace;
+            font-size: 0.95rem;
+        }
+
+        .run-task-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .run-task-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .output-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: "Courier New", monospace;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+            min-height: 40px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>PyCamp</h1>
+    <p>Интерактивный курс по Python для начинающих</p>
+</header>
+
+<div class="container">
+    <aside class="sidebar">
+        <h3>Навигация по курсу</h3>
+        <ul class="module-list" id="lessonList">
+            <!-- Кнопки генерируются скриптом -->
+        </ul>
+    </aside>
+
+    <main class="main-content" id="lessonContent">
+        <!-- Контент уроков генерируется скриптом -->
+        <div style="text-align: center; padding: 3rem;">
+            <h2>Добро пожаловать в PyCamp!</h2>
+            <p>Выберите урок в меню слева, чтобы начать обучение.</p>
+        </div>
+    </main>
+</div>
+
+<footer>
+    <p>&copy; 2026 PyCamp. Самообучение программированию.</p>
+</footer>
+
+<script>
+    // База данных курса
+    const course = [
+        {
+            id: 0,
+            title: "Введение",
+            content: `
+                <h2 class="lesson-title">Урок 1: Введение в Python</h2>
+                <p>Python — это один из самых популярных языков программирования в мире. Его главные преимущества — простой и читаемый синтаксис, огромное сообщество и тысячи готовых библиотек.</p>
+                <p>В этом курсе мы будем изучать основы языка, которые позволят вам писать свои первые программы.</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(0, 'print("Привет, PyCamp!")')">Запустить</button>
+                    print("Привет, PyCamp!")
+                </div>
+                <div class="output-block" id="output-0"></div>
+                <div class="task">
+                    <h4>Задание 1.1</h4>
+                    <p>Измените код выше так, чтобы программа вывела ваше имя.</p>
+                    <textarea id="task-code-0">print("Ваше имя")</textarea>
+                    <button class="run-task-btn" onclick="runTask(0)">Проверить</button>
+                    <div class="output-block" id="task-output-0"></div>
+                </div>
+            `
+        },
+        {
+            id: 1,
+            title: "Переменные и типы данных",
+            content: `
+                <h2 class="lesson-title">Урок 2: Переменные и типы данных</h2>
+                <p>Переменная — это именованная область памяти для хранения данных. В Python не нужно явно указывать тип данных, он определяется автоматически.</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(1, 'age = 25\nname = "Иван"\nprint(name, "живет", age, "лет")')">Запустить</button>
+                    age = 25
+name = "Иван"
+print(name, "живет", age, "лет")
+                </div>
+                <div class="output-block" id="output-1"></div>
+                <p>Основные типы данных: <code>int</code> (целые числа), <code>float</code> (дробные), <code>str</code> (строки), <code>bool</code> (логические: True/False).</p>
+                <div class="task">
+                    <h4>Задание 2.1</h4>
+                    <p>Создайте переменную <code>price</code> со значением 150.50 и переменную <code>in_stock</code> со значением <code>True</code>. Выведите их на экран.</p>
+                    <textarea id="task-code-1">price = 150.50
+in_stock = True
+print(price, in_stock)</textarea>
+                    <button class="run-task-btn" onclick="runTask(1)">Проверить</button>
+                    <div class="output-block" id="task-output-1"></div>
+                </div>
+            `
+        },
+        {
+            id: 2,
+            title: "Условные операторы",
+            content: `
+                <h2 class="lesson-title">Урок 3: Условные операторы (if, else, elif)</h2>
+                <p>Условные операторы позволяют программе принимать решения.</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(2, 'age = 18\nif age >= 18:\n    print("Доступ разрешен")\nelse:\n    print("Доступ запрещен")')">Запустить</button>
+                    age = 18
+if age >= 18:
+    print("Доступ разрешен")
+else:
+    print("Доступ запрещен")
+                </div>
+                <div class="output-block" id="output-2"></div>
+                <div class="task">
+                    <h4>Задание 3.1</h4>
+                    <p>Напишите программу, которая проверяет, является ли число в переменной <code>num</code> положительным, отрицательным или нулем.</p>
+                    <textarea id="task-code-2">num = -10
+if num > 0:
+    print("Положительное")
+elif num < 0:
+    print("Отрицательное")
+else:
+    print("Ноль")</textarea>
+                    <button class="run-task-btn" onclick="runTask(2)">Проверить</button>
+                    <div class="output-block" id="task-output-2"></div>
+                </div>
+            `
+        },
+        {
+            id: 3,
+            title: "Циклы: for и while",
+            content: `
+                <h2 class="lesson-title">Урок 4: Циклы</h2>
+                <p>Циклы нужны для многократного выполнения действий.</p>
+                <p><strong>Цикл for</strong> перебирает элементы:</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(3, 'for i in range(5):\n    print(i)')">Запустить</button>
+                    for i in range(5):
+    print(i)
+                </div>
+                <div class="output-block" id="output-3"></div>
+                <p><strong>Цикл while</strong> выполняется, пока условие истинно:</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(3, 'count = 0\nwhile count < 3:\n    print("Итерация", count)\n    count += 1')">Запустить</button>
+                    count = 0
+while count < 3:
+    print("Итерация", count)
+    count += 1
+                </div>
+                <div class="output-block" id="output-3-1"></div>
+                <div class="task">
+                    <h4>Задание 4.1</h4>
+                    <p>Используя цикл <code>for</code>, выведите на экран таблицу умножения на 7 (от 1 до 10).</p>
+                    <textarea id="task-code-3">for i in range(1, 11):
+    print(f"7 * {i} = {7 * i}")</textarea>
+                    <button class="run-task-btn" onclick="runTask(3)">Проверить</button>
+                    <div class="output-block" id="task-output-3"></div>
+                </div>
+            `
+        },
+        {
+            id: 4,
+            title: "Функции",
+            content: `
+                <h2 class="lesson-title">Урок 5: Функции</h2>
+                <p>Функции позволяют упаковать код в переиспользуемые блоки.</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(4, 'def greet(name):\n    return f"Привет, {name}!"\n\nprint(greet("Мир"))\nprint(greet("Python"))')">Запустить</button>
+                    def greet(name):
+    return f"Привет, {name}!"
+
+print(greet("Мир"))
+print(greet("Python"))
+                </div>
+                <div class="output-block" id="output-4"></div>
+                <div class="task">
+                    <h4>Задание 5.1</h4>
+                    <p>Создайте функцию <code>sum_two(a, b)</code>, которая принимает два числа и возвращает их сумму. Вызовите её с числами 10 и 20.</p>
+                    <textarea id="task-code-4">def sum_two(a, b):
+    return a + b
+
+result = sum_two(10, 20)
+print(result)</textarea>
+                    <button class="run-task-btn" onclick="runTask(4)">Проверить</button>
+                    <div class="output-block" id="task-output-4"></div>
+                </div>
+            `
+        },
+        {
+            id: 5,
+            title: "Списки и словари",
+            content: `
+                <h2 class="lesson-title">Урок 6: Структуры данных</h2>
+                <p><strong>Список (list)</strong> — упорядоченная изменяемая коллекция:</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(5, 'fruits = ["яблоко", "банан", "груша"]\nprint(fruits[0])\nfruits.append("апельсин")\nprint(fruits)')">Запустить</button>
+                    fruits = ["яблоко", "банан", "груша"]
+print(fruits[0])
+fruits.append("апельсин")
+print(fruits)
+                </div>
+                <div class="output-block" id="output-5"></div>
+                <p><strong>Словарь (dict)</strong> — пары ключ-значение:</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(5, 'user = {"name": "Алексей", "age": 30}\nprint(user["name"])\nuser["city"] = "Москва"\nprint(user)')">Запустить</button>
+                    user = {"name": "Алексей", "age": 30}
+print(user["name"])
+user["city"] = "Москва"
+print(user)
+                </div>
+                <div class="output-block" id="output-5-1"></div>
+                <div class="task">
+                    <h4>Задание 6.1</h4>
+                    <p>Создайте список из трех городов. С помощью цикла выведите каждый город с его порядковым номером (начиная с 1).</p>
+                    <textarea id="task-code-5">cities = ["Санкт-Петербург", "Казань", "Новосибирск"]
+for i, city in enumerate(cities, start=1):
+    print(f"{i}. {city}")</textarea>
+                    <button class="run-task-btn" onclick="runTask(5)">Проверить</button>
+                    <div class="output-block" id="task-output-5"></div>
+                </div>
+            `
+        },
+        {
+            id: 6,
+            title: "Работа с файлами",
+            content: `
+                <h2 class="lesson-title">Урок 7: Работа с файлами</h2>
+                <p>Python позволяет легко читать и записывать данные в файлы.</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(6, 'with open("example.txt", "w", encoding="utf-8") as f:\n    f.write("Привет из PyCamp!\\nЭто вторая строка.")\n\nwith open("example.txt", "r", encoding="utf-8") as f:\n    content = f.read()\n    print(content)')">Запустить</button>
+                    with open("example.txt", "w", encoding="utf-8") as f:
+    f.write("Привет из PyCamp!\\nЭто вторая строка.")
+
+with open("example.txt", "r", encoding="utf-8") as f:
+    content = f.read()
+    print(content)
+                </div>
+                <div class="output-block" id="output-6"></div>
+                <div class="task">
+                    <h4>Задание 7.1</h4>
+                    <p>Откройте файл для записи и сохраните в него три любых любимых фильма (каждый с новой строки).</p>
+                    <textarea id="task-code-6">movies = ["Брат", "Движение вверх", "Холоп"]
+with open("movies.txt", "w", encoding="utf-8") as f:
+    for movie in movies:
+        f.write(movie + "\\n")</textarea>
+                    <button class="run-task-btn" onclick="runTask(6)">Проверить</button>
+                    <div class="output-block" id="task-output-6"></div>
+                </div>
+            `
+        },
+        {
+            id: 7,
+            title: "Финальный проект",
+            content: `
+                <h2 class="lesson-title">Урок 8: Финальный проект — Текстовая викторина</h2>
+                <p>Поздравляем! Вы изучили основы. Теперь объединим всё в одну программу. Это простая викторина в консоли.</p>
+                <div class="code-block">
+                    <button class="run-btn" onclick="runCode(7, 'score = 0\nquestions = [\n    {"q": "Столица России?", "a": "Москва"},\n    {"q": "2 + 2 * 2 = ?", "a": "6"},\n    {"q": "Какой тип у [1, 2, 3]?", "a": "list"}\n]\n\nfor item in questions:\n    answer = input(item["q"] + " ")\n    if answer.lower() == item["a"].lower():\n        print("Верно!")\n        score += 1\n    else:\n        print("Неверно. Правильный ответ:", item["a"])\n\nprint(f"Ваш итоговый счет: {score}/{len(questions)}")')">Запустить</button>
+                    score = 0
+questions = [
+    {"q": "Столица России?", "a": "Москва"},
+    {"q": "2 + 2 * 2 = ?", "a": "6"},
+    {"q": "Какой тип у [1, 2, 3]?", "a": "list"}
+]
+
+for item in questions:
+    answer = input(item["q"] + " ")
+    if answer.lower() == item["a"].lower():
+        print("Верно!")
+        score += 1
+    else:
+        print("Неверно. Правильный ответ:", item["a"])
+
+print(f"Ваш итоговый счет: {score}/{len(questions)}")
+                </div>
+                <div class="output-block" id="output-7"></div>
+                <div class="task">
+                    <h4>Ваше задание</h4>
+                    <p>Скопируйте этот код в ваш локальный редактор (например, VS Code), установите Python и запустите. Дополните список вопросов своими собственными (минимум 5 штук) на тему, которая вам интересна.</p>
+                </div>
+            `
+        }
+    ];
+
+    const lessonList = document.getElementById('lessonList');
+    const lessonContent = document.getElementById('lessonContent');
+
+    // Генерация меню
+    course.forEach(lesson => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = lesson.title;
+        btn.onclick = () => loadLesson(lesson.id);
+        lessonList.appendChild(btn);
+    });
+
+    function loadLesson(id) {
+        // Обновление стилей кнопок
+        document.querySelectorAll('.module-list button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.module-list button')[id].classList.add('active');
+        
+        lessonContent.innerHTML = course[id].content;
+    }
+
+    // Простейший эмулятор Python через JavaScript (только для базовых примеров)
+    function runCode(lessonId, code) {
+        const output = document.getElementById(`output-${lessonId}`);
+        output.innerHTML = '<em>Выполнение...</em>';
+        
+        // Имитация времени выполнения
+        setTimeout(() => {
+            try {
+                // Заменяем print на console.log для eval, а затем перехватываем
+                const consoleLog = console.log;
+                const logs = [];
+                console.log = (...args) => {
+                    logs.push(args.join(' '));
+                };
+
+                // Выполняем код
+                eval(code);
+                
+                // Возвращаем стандартный лог
+                console.log = consoleLog;
+                
+                output.innerHTML = logs.join('<br>') || '<em>Вывод отсутствует.</em>';
+            } catch (e) {
+                console.log = consoleLog;
+                output.innerHTML = `<span style="color:red;">Ошибка: ${e.message}</span>`;
+            }
+        }, 100);
+    }
+
+    function runTask(lessonId) {
+        const code = document.getElementById(`task-code-${lessonId}`).value;
+        const output = document.getElementById(`task-output-${lessonId}`);
+        output.innerHTML = '<em>Проверка...</em>';
+
+        setTimeout(() => {
+            try {
+                const consoleLog = console.log;
+                const logs = [];
+                console.log = (...args) => {
+                    logs.push(args.join(' '));
+                };
+
+                eval(code);
+                console.log = consoleLog;
+                
+                output.innerHTML = logs.join('<br>') || '<em>Код выполнен без вывода.</em>';
+                output.style.color = 'green';
+            } catch (e) {
+                console.log = consoleLog;
+                output.innerHTML = `<span style="color:red;">Ошибка: ${e.message}</span>`;
+                output.style.color = 'red';
+            }
+        }, 100);
+    }
+
+    // Загружаем первый урок по умолчанию
+    if (course.length > 0) {
+        loadLesson(0);
+    }
+</script>
+
+</body>
+</html>
